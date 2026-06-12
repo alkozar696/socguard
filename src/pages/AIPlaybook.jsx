@@ -5,6 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { base44 } from '@/api/base44Client';
 
 const demoPlaybook = {
   name: 'USB Unauthorized Device in OT Control Station',
@@ -42,6 +43,21 @@ const demoPlaybook = {
   closureCondition: 'העמדה נוקתה ואומתה, ההתקן נבדק פיזית ודיגיטלית, לא נמצאה פעילות זדונית ברשת OT, ומדיניות USB עודכנה.',
 };
 
+const examples = [
+  'זיהוי התקן USB זר ולא מורשה שהוכנס פיזית לעמדת ההפעלה והבקרה המרכזית בתחנת כוח המופעלת בגז.',
+  'ניסיון פישינג ממוקד (Spear Phishing) נגד עובד מחלקת IT עם קישור לאיסוף אישורי גישה.',
+  'זיהוי תעבורת C2 (Command & Control) חשודה מתחנת עבודה ברשת ה-OT.',
+  'כופרה (Ransomware) הצפינה תיקיות שיתוף ברשת הפנימית.',
+  'גישה לא מורשית לממשק ניהול של PLC תחת ה-SCADA.',
+  'גילוי סריקת פורטים פנימית (Internal Port Scan) ממארח שנפרץ.',
+  'דליפת נתונים חשודה – העברת קבצים גדולים מחוץ לארגון דרך SFTP.',
+  'ניסיון Brute Force על מערכת VPN הארגוני ממספר IP חיצוניים.',
+  'זיהוי תוכנת כריית מטבעות קריפטו (Cryptominer) על שרת ייצור.',
+  'Lateral Movement שזוהה – חשבון משתמש מנצל Pass-the-Hash לגישה לשרתים נוספים.',
+  'אתר ניהול אינטרנטי (Web Admin Panel) חשוף לאינטרנט עם ניצול SQLi.',
+  'זיהוי Insider Threat – עובד מוריד כמויות חריגות של מידע רגיש לפני עזיבה.',
+];
+
 export default function AIPlaybook() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -63,7 +79,6 @@ export default function AIPlaybook() {
     }
 
     // Generate dynamic playbook using LLM
-    const { base44 } = await import('@/api/base44Client');
     const generated = await base44.integrations.Core.InvokeLLM({
       prompt: `אתה מומחה SOC בתחום אבטחת סייבר לתשתיות קריטיות (חשמל, אנרגיה, OT/ICS).
 צור Playbook מפורט לתגובה לאירוע הבא: "${input.trim()}"
@@ -101,21 +116,6 @@ export default function AIPlaybook() {
     setResult(generated);
     setLoading(false);
   };
-
-  const examples = [
-    'זיהוי התקן USB זר ולא מורשה שהוכנס פיזית לעמדת ההפעלה והבקרה המרכזית בתחנת כוח המופעלת בגז.',
-    'ניסיון פישינג ממוקד (Spear Phishing) נגד עובד מחלקת IT עם קישור לאיסוף אישורי גישה.',
-    'זיהוי תעבורת C2 (Command & Control) חשודה מתחנת עבודה ברשת ה-OT.',
-    'כופרה (Ransomware) הצפינה תיקיות שיתוף ברשת הפנימית.',
-    'גישה לא מורשית לממשק ניהול של PLC תחת ה-SCADA.',
-    'גילוי סריקת פורטים פנימית (Internal Port Scan) ממארח שנפרץ.',
-    'דליפת נתונים חשודה – העברת קבצים גדולים מחוץ לארגון דרך SFTP.',
-    'ניסיון Brute Force על מערכת VPN הארגוני ממספר IP חיצוניים.',
-    'זיהוי תוכנת כריית מטבעות קריפטו (Cryptominer) על שרת ייצור.',
-    'Lateral Movement שזוהה – חשבון משתמש מנצל Pass-the-Hash לגישה לשרתים נוספים.',
-    'אתר ניהול אינטרנטי (Web Admin Panel) חשוף לאינטרנט עם ניצול SQLi.',
-    'זיהוי Insider Threat – עובד מוריד כמויות חריגות של מידע רגיש לפני עזיבה.',
-  ];
 
   return (
     <div className="space-y-6">
