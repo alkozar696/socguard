@@ -1,53 +1,64 @@
 import React, { useState } from 'react';
-import { Search, Shield, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { Search, Shield, AlertTriangle, CheckCircle, Loader2, XCircle, HelpCircle, Globe, Server, Hash, Link } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { virusTotalDemoResults } from '@/lib/demoData';
-import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import { base44 } from '@/api/base44Client';
 
-const riskColors = {
-  Critical: 'text-red-400',
-  High: 'text-orange-400',
-  Medium: 'text-yellow-400',
-  Low: 'text-green-400',
+const typeLabels = { files: 'Hash', domains: 'Domain', ip_addresses: 'IP Address', urls: 'URL' };
+const typeIcons = { files: Hash, domains: Globe, ip_addresses: Server, urls: Link };
+
+const riskConfig = {
+  malicious: { label: 'זדוני', color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/30', badge: 'bg-red-500 text-white', icon: XCircle },
+  suspicious: { label: 'חשוד', color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30', badge: 'bg-orange-500 text-white', icon: AlertTriangle },
+  clean: { label: 'נקי', color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/30', badge: 'bg-green-500 text-white', icon: CheckCircle },
+  unknown: { label: 'לא ידוע', color: 'text-muted-foreground', bg: 'bg-secondary/30 border-border', badge: 'bg-secondary text-foreground', icon: HelpCircle },
 };
+
+const exampleQueries = [
+  '8.8.8.8',
+  'google.com',
+  '44d88612fea8a8f36de82e1278abb02f',
+];
 
 export default function VirusTotal() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [history, setHistory] = useState(virusTotalDemoResults);
+  const [error, setError] = useState(null);
+  const [history, setHistory] = useState([]);
 
-  const handleCheck = () => {
+  const handleCheck = async () => {
     if (!query.trim()) return;
     setLoading(true);
     setResult(null);
+    setError(null);
 
-    setTimeout(() => {
-      const demo = virusTotalDemoResults.find(r => r.query === query.trim());
-      const newResult = demo || {
-        query: query.trim(),
-        type: query.includes('.') ? (query.includes('/') ? 'URL' : (query.includes(':') ? 'IP' : 'Domain')) : 'Hash',
-        score: `${Math.floor(Math.random() * 30)}/72`,
-        engines: 72,
-        detected: Math.floor(Math.random() * 30),
-        threat: 'Suspicious Activity',
-        recommendation: Math.random() > 0.5 ? 'חסימה' : 'ניטור נוסף',
-        risk: Math.random() > 0.5 ? 'High' : 'Medium',
-      };
-      setResult(newResult);
-      if (!demo) setHistory(prev => [newResult, ...prev]);
-      setLoading(false);
-    }, 2000);
+    const response = await base44.functions.invoke('virusTotal', { query: query.trim() });
+    const data = response.data;
+
+    setLoading(false);
+
+    if (data.error && data.error === 'not_found') {
+      setError('לא נמצא מידע עבור שאילתה זו ב-VirusTotal');
+      return;
+    }
+    if (data.error) {
+      setError(`שגיאה: ${data.message || data.error}`);
+      return;
+    }
+
+    setResult(data);
+    setHistory(prev => [data, ...prev.filter(h => h.query !== data.query)].slice(0, 10));
   };
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">בדיקת VirusTotal</h1>
-        <p className="text-sm text-muted-foreground mt-1">בדיקת Hash, IP, דומיין או URL מול מנועי VirusTotal</p>
+        <p className="text-sm text-muted-foreground mt-1">בדיקת Hash, IP, דומיין או URL מול מנועי VirusTotal בזמן אמת</p>
       </div>
 
       {/* Search */}
@@ -63,92 +74,165 @@ export default function VirusTotal() {
               onKeyDown={e => e.key === 'Enter' && handleCheck()}
             />
           </div>
-          <Button onClick={handleCheck} disabled={loading} className="gap-2 min-w-[140px]">
+          <Button onClick={handleCheck} disabled={loading || !query.trim()} className="gap-2 min-w-[160px]">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             {loading ? 'בודק...' : 'בדוק ב-VirusTotal'}
           </Button>
         </div>
-
-        {/* Quick buttons */}
-        <div className="flex gap-2 mt-3 flex-wrap">
+        <div className="flex gap-2 mt-3 flex-wrap items-center">
           <span className="text-xs text-muted-foreground">דוגמאות:</span>
-          {virusTotalDemoResults.map(r => (
+          {exampleQueries.map(q => (
             <button
-              key={r.query}
-              onClick={() => setQuery(r.query)}
+              key={q}
+              onClick={() => setQuery(q)}
               className="text-xs px-2 py-1 rounded bg-secondary hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-colors font-mono"
             >
-              {r.query}
+              {q}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Result */}
-      {result && (
-        <div className="bg-card rounded-xl border border-border p-6">
-          <h3 className="text-sm font-semibold text-foreground mb-4">תוצאת בדיקה</h3>
-          <div className="grid grid-cols-4 gap-6">
-            <div className="col-span-1 flex flex-col items-center justify-center p-6 rounded-xl bg-secondary/50">
-              <div className={cn("text-4xl font-bold", riskColors[result.risk])}>{result.score}</div>
-              <p className="text-xs text-muted-foreground mt-2">Malicious Score</p>
-              <div className="w-full mt-3">
-                <Progress value={(result.detected / result.engines) * 100} className="h-2" />
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1">{result.detected} מתוך {result.engines} מנועים</p>
-            </div>
-            <div className="col-span-3 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground">שאילתה</p>
-                  <p className="text-sm font-mono text-foreground mt-1 break-all">{result.query}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground">סוג</p>
-                  <p className="text-sm font-medium text-foreground mt-1">{result.type}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground">סוג איום</p>
-                  <p className="text-sm font-medium text-foreground mt-1">{result.threat}</p>
-                </div>
-                <div className="p-4 rounded-lg bg-secondary/30">
-                  <p className="text-[10px] text-muted-foreground">רמת סיכון</p>
-                  <Badge className={cn("mt-1", result.risk === 'Critical' ? 'bg-red-500 text-white' : result.risk === 'High' ? 'bg-orange-500 text-white' : 'bg-yellow-500 text-black')}>
-                    {result.risk}
-                  </Badge>
-                </div>
-              </div>
-              <div className="p-4 rounded-lg bg-orange-500/10 border border-orange-500/20">
-                <div className="flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-orange-400" />
-                  <span className="text-sm font-medium text-orange-400">המלצת פעולה: {result.recommendation}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* Error */}
+      {error && (
+        <div className="bg-card rounded-xl border border-red-500/30 p-5 flex items-center gap-3">
+          <XCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
-      {/* History */}
-      <div className="bg-card rounded-xl border border-border p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-4">היסטוריית בדיקות</h3>
-        <div className="space-y-2">
-          {history.map((r, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <Badge variant="outline" className="text-[10px]">{r.type}</Badge>
-                <span className="text-sm font-mono text-foreground">{r.query}</span>
+      {/* Result */}
+      {result && (() => {
+        const risk = riskConfig[result.riskLevel] || riskConfig.unknown;
+        const RiskIcon = risk.icon;
+        const TypeIcon = typeIcons[result.type] || Hash;
+        const pct = result.stats.total > 0 ? Math.round((result.stats.malicious / result.stats.total) * 100) : 0;
+        return (
+          <div className="space-y-4">
+            {/* Risk banner */}
+            <div className={cn("rounded-xl border p-5 flex items-center gap-4", risk.bg)}>
+              <RiskIcon className={cn("w-8 h-8 flex-shrink-0", risk.color)} />
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <h3 className={cn("text-xl font-bold", risk.color)}>{risk.label}</h3>
+                  <Badge className={cn("text-xs", risk.badge)}>{typeLabels[result.type] || result.type}</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground font-mono mt-1 break-all">{result.query}</p>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-muted-foreground">{r.threat}</span>
-                <Badge className={cn(r.risk === 'Critical' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white', 'text-[10px]')}>
-                  {r.score}
-                </Badge>
+              <div className="text-right flex-shrink-0">
+                <p className={cn("text-3xl font-bold", risk.color)}>{result.stats.malicious}/{result.stats.total}</p>
+                <p className="text-xs text-muted-foreground">מנועים זיהו כזדוני</p>
               </div>
             </div>
-          ))}
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-4 gap-3">
+              {[
+                { label: 'זדוני', value: result.stats.malicious, color: 'text-red-400' },
+                { label: 'חשוד', value: result.stats.suspicious, color: 'text-orange-400' },
+                { label: 'לא מזוהה', value: result.stats.undetected, color: 'text-muted-foreground' },
+                { label: 'נקי', value: result.stats.harmless, color: 'text-green-400' },
+              ].map(s => (
+                <div key={s.label} className="bg-card rounded-xl border border-border p-4 text-center">
+                  <p className={cn("text-2xl font-bold", s.color)}>{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Progress */}
+            <div className="bg-card rounded-xl border border-border p-5">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-xs text-muted-foreground">אחוז זיהוי</span>
+                <span className="text-xs font-bold text-foreground">{pct}%</span>
+              </div>
+              <Progress value={pct} className="h-2" />
+            </div>
+
+            {/* Meta info */}
+            {(result.country || result.asOwner || result.reputation !== undefined || result.tags?.length > 0) && (
+              <div className="bg-card rounded-xl border border-border p-5 grid grid-cols-2 gap-4">
+                {result.country && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">מדינה</p>
+                    <p className="text-sm text-foreground mt-1">{result.country}</p>
+                  </div>
+                )}
+                {result.asOwner && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">בעל ASN</p>
+                    <p className="text-sm text-foreground mt-1">{result.asOwner}</p>
+                  </div>
+                )}
+                {result.reputation !== undefined && (
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">Reputation Score</p>
+                    <p className={cn("text-sm font-bold mt-1", result.reputation < 0 ? 'text-red-400' : 'text-green-400')}>{result.reputation}</p>
+                  </div>
+                )}
+                {result.tags?.length > 0 && (
+                  <div className="col-span-2">
+                    <p className="text-[10px] text-muted-foreground mb-2">תגיות</p>
+                    <div className="flex flex-wrap gap-1">
+                      {result.tags.map(t => <Badge key={t} variant="outline" className="text-[10px]">{t}</Badge>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Detections */}
+            {result.detections?.length > 0 && (
+              <div className="bg-card rounded-xl border border-border p-5">
+                <h4 className="text-sm font-semibold text-foreground mb-3">מנועים שזיהו איום</h4>
+                <div className="space-y-2">
+                  {result.detections.map((d, i) => (
+                    <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30">
+                      <span className="text-xs font-medium text-foreground">{d.engine}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">{d.result}</span>
+                        <Badge className={cn("text-[10px]", d.category === 'malicious' ? 'bg-red-500 text-white' : 'bg-orange-500 text-white')}>
+                          {d.category}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* History */}
+      {history.length > 0 && (
+        <div className="bg-card rounded-xl border border-border p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-4">היסטוריית בדיקות</h3>
+          <div className="space-y-2">
+            {history.map((r, i) => {
+              const risk = riskConfig[r.riskLevel] || riskConfig.unknown;
+              const TypeIcon = typeIcons[r.type] || Hash;
+              return (
+                <div
+                  key={i}
+                  className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
+                  onClick={() => { setQuery(r.query); setResult(r); setError(null); }}
+                >
+                  <div className="flex items-center gap-3">
+                    <TypeIcon className="w-4 h-4 text-muted-foreground" />
+                    <Badge variant="outline" className="text-[10px]">{typeLabels[r.type] || r.type}</Badge>
+                    <span className="text-sm font-mono text-foreground">{r.query}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-muted-foreground">{r.stats.malicious}/{r.stats.total}</span>
+                    <Badge className={cn("text-[10px]", risk.badge)}>{risk.label}</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
