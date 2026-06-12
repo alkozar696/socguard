@@ -111,6 +111,29 @@ export default function AIPlaybook() {
         </div>
       </div>
 
+      {/* Common Playbooks */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs font-semibold text-muted-foreground tracking-widest uppercase">Common Playbooks</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {examples.map((ex, i) => (
+            <button
+              key={i}
+              onClick={() => setInput(ex)}
+              className="text-right p-4 rounded-xl bg-card border border-border hover:border-primary/50 hover:bg-secondary/40 transition-all group"
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-xs font-bold text-primary bg-primary/10 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors leading-relaxed line-clamp-2">{ex}</p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Loading animation */}
       {loading && (
         <div className="bg-card rounded-xl border border-border p-12 flex flex-col items-center justify-center">
