@@ -68,16 +68,6 @@ export default function AIPlaybook() {
     setLoading(true);
     setResult(null);
 
-    const isCommonPlaybook = examples.some(ex => ex === input.trim());
-
-    if (isCommonPlaybook) {
-      setTimeout(() => {
-        setResult(demoPlaybook);
-        setLoading(false);
-      }, 3000);
-      return;
-    }
-
     // Generate dynamic playbook using LLM
     const generated = await base44.integrations.Core.InvokeLLM({
       prompt: `אתה מומחה SOC בתחום אבטחת סייבר לתשתיות קריטיות (חשמל, אנרגיה, OT/ICS).
