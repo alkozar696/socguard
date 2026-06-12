@@ -252,9 +252,48 @@ export const mitreAttackData = {
     { id: 'T0855', name: 'Unauthorized Command Message (ICS)', tactic: 'Impair Process Control', description: 'שליחת פקודות לא מורשות למערכות SCADA/ICS', relevance: 'Critical' },
   ],
   threatGroups: [
-    { name: 'Sandworm Team / Electrum', origin: 'רוסיה', target: 'תשתיות חשמל, Energy', techniques: ['T1059', '1486', 'T0855'], description: 'קבוצת תקיפה ממומנת מדינה, אחראית על מתקפות נגד רשתות חשמל באוקראינה' },
-    { name: 'APT33 / Elfin', origin: 'איראן', target: 'אנרגיה, תעופה', techniques: ['T1566.001', 'T1078', 'T1110'], description: 'קבוצת ריגול שמתמקדת בתשתיות אנרגיה ותעופה' },
-    { name: 'Xenotime', origin: 'לא ידוע', target: 'ICS, Safety Systems', techniques: ['T0855', 'T1021', 'T1562'], description: 'קבוצה מתקדמת שתוקפת מערכות בטיחות תעשייתיות (SIS)' },
+    {
+      name: 'Sandworm Team / Electrum',
+      origin: 'רוסיה',
+      target: 'תשתיות חשמל, Energy Grid',
+      techniques: ['T1059', 'T1486', 'T0855'],
+      description: 'קבוצת תקיפה ממומנת מדינה (GRU), אחראית על מתקפות BlackEnergy ו-Industroyer שגרמו להפסקות חשמל נרחבות באוקראינה ב-2015 ו-2016. מיועדת במיוחד לתחנות חשמל ורשתות הפצה.',
+    },
+    {
+      name: 'APT33 / Elfin / Magnallium',
+      origin: 'איראן',
+      target: 'אנרגיה, נפט וגז, תעופה',
+      techniques: ['T1566.001', 'T1078', 'T1110', 'T1048'],
+      description: 'קבוצה איראנית שמתמקדת בתשתיות אנרגיה ונפט וגז. ידועה בשימוש ב-Spearphishing ובתוכנה זדונית DROPSHOT ו-SHAPESHIFT. פעילה מ-2013.',
+    },
+    {
+      name: 'Xenotime / TEMP.Veles',
+      origin: 'רוסיה',
+      target: 'מערכות בטיחות תעשייתיות (SIS), נפט וגז',
+      techniques: ['T0855', 'T1021', 'T1562', 'T1059'],
+      description: 'קבוצה שפיתחה את נוזקת TRITON/TRISIS – המתקפה הראשונה שהתמקדה ישירות במערכות Safety Instrumented Systems במתקן נפט בסעודיה. נחשבת לאחד האיומים החמורים ביותר על תשתיות קריטיות.',
+    },
+    {
+      name: 'APT40 / BRONZE MOHAWK',
+      origin: 'סין',
+      target: 'תשתיות אנרגיה, ימי, ממשלות',
+      techniques: ['T1566.001', 'T1078', 'T1021', 'T1071'],
+      description: 'קבוצה סינית (MSS) שמתמקדת בגניבת קניין רוחני וריגול מדינתי. תוקפת ספקי אנרגיה ותשתיות ימיות עם דגש על טכנולוגיות אנרגיה מתחדשת.',
+    },
+    {
+      name: 'Dragonfly / Energetic Bear',
+      origin: 'רוסיה',
+      target: 'ספקי אנרגיה, ICS/SCADA, Energy Sector',
+      techniques: ['T1078', 'T1021', 'T1562', 'T1048'],
+      description: 'קבוצה שמתמקדת בחדירה לרשתות ספקי אנרגיה בארה"ב ואירופה. ביצעה מתקפות Supply Chain נגד ספקי תוכנה ICS ותוקפת ישירות ממשקי SCADA וHMI של תחנות כוח.',
+    },
+    {
+      name: 'Lazarus Group / Hidden Cobra',
+      origin: 'צפון קוריאה',
+      target: 'אנרגיה, בנקים, קריפטו',
+      techniques: ['T1486', 'T1566.001', 'T1059', 'T1110'],
+      description: 'קבוצה צפון קוריאנית הידועה בהתקפות כופרה ומתקפות פיננסיות. בשנים האחרונות הרחיבה פעילות לתשתיות אנרגיה ורשתות OT למימון הממשל.',
+    },
   ],
 };
 
