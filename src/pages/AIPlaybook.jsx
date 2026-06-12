@@ -58,7 +58,20 @@ export default function AIPlaybook() {
     }, 3000);
   };
 
-  const exampleText = 'זיהוי התקן USB זר ולא מורשה שהוכנס פיזית לעמדת ההפעלה והבקרה המרכזית בתחנת כוח המופעלת בגז.';
+  const examples = [
+    'זיהוי התקן USB זר ולא מורשה שהוכנס פיזית לעמדת ההפעלה והבקרה המרכזית בתחנת כוח המופעלת בגז.',
+    'ניסיון פישינג ממוקד (Spear Phishing) נגד עובד מחלקת IT עם קישור לאיסוף אישורי גישה.',
+    'זיהוי תעבורת C2 (Command & Control) חשודה מתחנת עבודה ברשת ה-OT.',
+    'כופרה (Ransomware) הצפינה תיקיות שיתוף ברשת הפנימית.',
+    'גישה לא מורשית לממשק ניהול של PLC תחת ה-SCADA.',
+    'גילוי סריקת פורטים פנימית (Internal Port Scan) ממארח שנפרץ.',
+    'דליפת נתונים חשודה – העברת קבצים גדולים מחוץ לארגון דרך SFTP.',
+    'ניסיון Brute Force על מערכת VPN הארגוני ממספר IP חיצוניים.',
+    'זיהוי תוכנת כריית מטבעות קריפטו (Cryptominer) על שרת ייצור.',
+    'Lateral Movement שזוהה – חשבון משתמש מנצל Pass-the-Hash לגישה לשרתים נוספים.',
+    'אתר ניהול אינטרנטי (Web Admin Panel) חשוף לאינטרנט עם ניצול SQLi.',
+    'זיהוי Insider Threat – עובד מוריד כמויות חריגות של מידע רגיש לפני עזיבה.',
+  ];
 
   return (
     <div className="space-y-6">
@@ -79,12 +92,18 @@ export default function AIPlaybook() {
           className="text-sm"
         />
         <div className="flex items-center justify-between mt-3">
-          <button
-            onClick={() => setInput(exampleText)}
-            className="text-xs text-primary hover:underline"
-          >
-            טען תיאור לדוגמה
-          </button>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-muted-foreground">דוגמאות:</span>
+            {examples.map((ex, i) => (
+              <button
+                key={i}
+                onClick={() => setInput(ex)}
+                className="text-xs px-2 py-1 rounded bg-secondary hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
           <Button onClick={handleGenerate} disabled={loading || !input.trim()} className="gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {loading ? 'מייצר Playbook...' : 'צור Playbook'}
