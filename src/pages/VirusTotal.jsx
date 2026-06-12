@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Shield, AlertTriangle, CheckCircle, Loader2, XCircle, HelpCircle, Globe, Server, Hash, Link } from 'lucide-react';
+import { Search, AlertTriangle, CheckCircle, Loader2, XCircle, HelpCircle, Globe, Server, Hash, Link, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -26,20 +26,22 @@ const exampleQueries = [
 export default function VirusTotal() {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rescanning, setRescanning] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
 
-  const handleCheck = async () => {
+  const handleCheck = async (rescan = false) => {
     if (!query.trim()) return;
-    setLoading(true);
-    setResult(null);
+    if (rescan) setRescanning(true);
+    else { setLoading(true); setResult(null); }
     setError(null);
 
-    const response = await base44.functions.invoke('virusTotal', { query: query.trim() });
+    const response = await base44.functions.invoke('virusTotal', { query: query.trim(), rescan });
     const data = response.data;
 
     setLoading(false);
+    setRescanning(false);
 
     if (data.error && data.error === 'not_found') {
       setError('לא נמצא מידע עבור שאילתה זו ב-VirusTotal');
@@ -74,7 +76,7 @@ export default function VirusTotal() {
               onKeyDown={e => e.key === 'Enter' && handleCheck()}
             />
           </div>
-          <Button onClick={handleCheck} disabled={loading || !query.trim()} className="gap-2 min-w-[160px]">
+          <Button onClick={() => handleCheck(false)} disabled={loading || rescanning || !query.trim()} className="gap-2 min-w-[160px]">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             {loading ? 'בודק...' : 'בדוק ב-VirusTotal'}
           </Button>
@@ -118,10 +120,29 @@ export default function VirusTotal() {
                   <Badge className={cn("text-xs", risk.badge)}>{typeLabels[result.type] || result.type}</Badge>
                 </div>
                 <p className="text-xs text-muted-foreground font-mono mt-1 break-all">{result.query}</p>
+                {result.lastAnalysisDate && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    ניתוח אחרון: {new Date(result.lastAnalysisDate * 1000).toLocaleString('he-IL')}
+                  </p>
+                )}
               </div>
-              <div className="text-right flex-shrink-0">
-                <p className={cn("text-3xl font-bold", risk.color)}>{result.stats.malicious}/{result.stats.total}</p>
-                <p className="text-xs text-muted-foreground">מנועים זיהו כזדוני</p>
+              <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                <div className="text-right">
+                  <p className={cn("text-3xl font-bold", risk.color)}>{result.stats.malicious}/{result.stats.total}</p>
+                  <p className="text-xs text-muted-foreground">מנועים זיהו כזדוני</p>
+                </div>
+                {result.canRescan && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleCheck(true)}
+                    disabled={rescanning}
+                    className="gap-2 text-xs"
+                  >
+                    <RefreshCw className={cn("w-3 h-3", rescanning && "animate-spin")} />
+                    {rescanning ? 'מנתח מחדש...' : 'Rescan'}
+                  </Button>
+                )}
               </div>
             </div>
 
