@@ -146,6 +146,47 @@ export default function VirusTotal() {
               </div>
             </div>
 
+            {/* Recommendation banner */}
+            {(result.riskLevel === 'malicious' || result.riskLevel === 'suspicious') && (() => {
+              const recommendations = {
+                malicious: {
+                  title: 'פעולות מומלצות מיידיות',
+                  color: 'border-red-500/40 bg-red-500/10',
+                  titleColor: 'text-red-400',
+                  actions: [
+                    { label: '🚫 חסום בפיירוול', desc: 'הוסף לרשימת חסימה ב-Firewall / NGFW' },
+                    { label: '🔒 בודד מארח', desc: 'בצע Network Isolation על המכונה הנגועה' },
+                    { label: '🔍 פתח חקירה', desc: 'צור אירוע חדש ב-SIEM ופתח Playbook תגובה' },
+                    { label: '📢 הסלם לTier 2', desc: 'העבר לאנליסט Tier 2 לטיפול מיידי' },
+                  ]
+                },
+                suspicious: {
+                  title: 'פעולות מומלצות',
+                  color: 'border-orange-500/40 bg-orange-500/10',
+                  titleColor: 'text-orange-400',
+                  actions: [
+                    { label: '👁 מעקב מוגבר', desc: 'הפעל ניטור מוגבר על התעבורה הקשורה' },
+                    { label: '🔍 ניתוח נוסף', desc: 'שלח לסנדבוקס לניתוח דינמי מעמיק' },
+                    { label: '📋 תעד את הממצאים', desc: 'צור רשומת אירוע ותעד את הממצאים' },
+                  ]
+                }
+              };
+              const rec = recommendations[result.riskLevel];
+              return (
+                <div className={`rounded-xl border p-5 ${rec.color}`}>
+                  <h4 className={`text-sm font-semibold mb-3 ${rec.titleColor}`}>⚡ {rec.title}</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {rec.actions.map((a, i) => (
+                      <div key={i} className="bg-card/50 rounded-lg p-3 border border-border/50">
+                        <p className="text-sm font-medium text-foreground">{a.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{a.desc}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
             {/* Stats grid */}
             <div className="grid grid-cols-4 gap-3">
               {[
