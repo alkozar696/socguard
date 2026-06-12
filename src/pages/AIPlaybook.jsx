@@ -91,19 +91,7 @@ export default function AIPlaybook() {
           rows={4}
           className="text-sm"
         />
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs text-muted-foreground">דוגמאות:</span>
-            {examples.map((ex, i) => (
-              <button
-                key={i}
-                onClick={() => setInput(ex)}
-                className="text-xs px-2 py-1 rounded bg-secondary hover:bg-secondary/70 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {i + 1}
-              </button>
-            ))}
-          </div>
+        <div className="flex items-center justify-end mt-3">
           <Button onClick={handleGenerate} disabled={loading || !input.trim()} className="gap-2">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
             {loading ? 'מייצר Playbook...' : 'צור Playbook'}
