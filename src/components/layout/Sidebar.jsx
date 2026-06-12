@@ -11,7 +11,7 @@ const navItems = [
   { path: '/events', label: 'ניהול אירועים', icon: AlertTriangle },
   { path: '/playbooks', label: 'Playbooks', icon: BookOpen },
   { path: '/virustotal', label: 'VirusTotal', icon: Search },
-  { path: '/mitre', label: 'MITRE ATT&CK', icon: Shield },
+  { path: '/mitre', label: 'Mitre Attack', icon: Shield },
   { path: '/soc-structure', label: 'מבנה SOC', icon: Users },
   { path: '/ai-playbook', label: 'AI Playbook', icon: Sparkles },
 ];
