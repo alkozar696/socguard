@@ -47,15 +47,59 @@ export default function AIPlaybook() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!input.trim()) return;
     setLoading(true);
     setResult(null);
 
-    setTimeout(() => {
-      setResult(demoPlaybook);
-      setLoading(false);
-    }, 3000);
+    const isCommonPlaybook = examples.some(ex => ex === input.trim());
+
+    if (isCommonPlaybook) {
+      setTimeout(() => {
+        setResult(demoPlaybook);
+        setLoading(false);
+      }, 3000);
+      return;
+    }
+
+    // Generate dynamic playbook using LLM
+    const { base44 } = await import('@/api/base44Client');
+    const generated = await base44.integrations.Core.InvokeLLM({
+      prompt: `אתה מומחה SOC בתחום אבטחת סייבר לתשתיות קריטיות (חשמל, אנרגיה, OT/ICS).
+צור Playbook מפורט לתגובה לאירוע הבא: "${input.trim()}"
+
+החזר JSON בדיוק בפורמט הזה (בעברית):
+{
+  "name": "שם קצר לplaybook",
+  "trigger": "תיאור הtrigger",
+  "severity": "Critical/High/Medium/Low",
+  "detectionSource": "מקור הזיהוי",
+  "identificationSteps": ["שלב 1", "שלב 2", "שלב 3", "שלב 4"],
+  "investigationSteps": ["שלב 1", "שלב 2", "שלב 3", "שלב 4", "שלב 5"],
+  "containmentSteps": ["שלב 1", "שלב 2", "שלב 3", "שלב 4"],
+  "responseActions": ["פעולה 1", "פעולה 2", "פעולה 3", "פעולה 4"],
+  "escalation": "תיאור הסלמה",
+  "closureCondition": "תנאי סגירה"
+}`,
+      response_json_schema: {
+        type: "object",
+        properties: {
+          name: { type: "string" },
+          trigger: { type: "string" },
+          severity: { type: "string" },
+          detectionSource: { type: "string" },
+          identificationSteps: { type: "array", items: { type: "string" } },
+          investigationSteps: { type: "array", items: { type: "string" } },
+          containmentSteps: { type: "array", items: { type: "string" } },
+          responseActions: { type: "array", items: { type: "string" } },
+          escalation: { type: "string" },
+          closureCondition: { type: "string" },
+        }
+      }
+    });
+
+    setResult(generated);
+    setLoading(false);
   };
 
   const examples = [
